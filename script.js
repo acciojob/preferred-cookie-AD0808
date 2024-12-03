@@ -1,56 +1,54 @@
 // Function to set a cookie
-// Function to set a cookie
 function setCookie(name, value, days) {
+  let expires = "";
+  if (days) {
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    expires = "; expires=" + date.toUTCString();
+  }
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 
-// Function to get a cookie value by name
+// Function to get a cookie by name
 function getCookie(name) {
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const cookieArr = decodedCookie.split(';');
-    
-    for(let i = 0; i < cookieArr.length; i++) {
-        const cookiePair = cookieArr[i].split('=');
-        if (name === cookiePair[0].trim()) {
-            return cookiePair[1];
-        }
-    }
-    return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
 }
 
 // Function to apply saved preferences
 function applyPreferences() {
-    const savedFontSize = getCookie('fontSize');
-    const savedFontColor = getCookie('fontColor');
+  const fontSize = getCookie("fontSize");
+  const fontColor = getCookie("fontColor");
 
-    if (savedFontSize) {
-        document.documentElement.style.setProperty('--fontsize', savedFontSize + 'px');
-        document.getElementById('fontsize').value = savedFontSize;
-    }
-    
-    if (savedFontColor) {
-        document.documentElement.style.setProperty('--fontcolor', savedFontColor);
-        document.getElementById('fontcolor').value = savedFontColor;
-    }
+  if (fontSize) {
+    document.documentElement.style.setProperty('--fontsize', fontSize + 'px');
+    document.getElementById('fontsize').value = fontSize;
+  }
+
+  if (fontColor) {
+    document.documentElement.style.setProperty('--fontcolor', fontColor);
+    document.getElementById('fontcolor').value = fontColor;
+  }
 }
 
 // Event listener for form submission
-document.getElementById('preferences-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevent form submission
-    const fontSize = document.getElementById('fontsize').value;
-    const fontColor = document.getElementById('fontcolor').value;
+document.getElementById('customizationForm').addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevent form submission
 
-    // Save preferences as cookies
-    setCookie('fontSize', fontSize, 30); // Save for 30 days
-    setCookie('fontColor', fontColor, 30); // Save for 30 days
-    
-    // Apply changes immediately
-    document.documentElement.style.setProperty('--fontsize', fontSize + 'px');
-    document.documentElement.style.setProperty('--fontcolor', fontColor);
+  const fontSize = document.getElementById('fontsize').value;
+  const fontColor = document.getElementById('fontcolor').value;
+
+  setCookie("fontSize", fontSize, 7); // Save font size for 7 days
+  setCookie("fontColor", fontColor, 7); // Save font color for 7 days
+
+  applyPreferences(); // Apply preferences immediately after saving
 });
 
-// Apply saved preferences on page load
-applyPreferences();
+// Apply preferences on page load
+window.onload = applyPreferences;
